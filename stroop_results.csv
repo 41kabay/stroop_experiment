@@ -1,0 +1,5 @@
+Participant,Block,Language,Congruency,Mean_RT(ms),StdDev,Correct_Count,Accuracy(%)
+dw,Native,Russian,Congruent,159.3,95.7,1,20.0%
+dw,Native,Russian,Incongruent,113.8,103.8,7,70.0%
+dw,Second,English,Congruent,105.9,58.7,2,40.0%
+dw,Second,English,Incongruent,197.2,144.1,1,10.0%
