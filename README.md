@@ -1,40 +1,61 @@
 # Stroop Task for Bilingual Participants
 
-This is a cognitive psychology experiment (Stroop Task) implemented in Python using PsychoPy. It is designed to test bilingual participants in two blocks — one in their native language and one in their second language.
+This is a cognitive psychology experiment based on the **Stroop Task**, implemented in Python using [PsychoPy](https://psychopy.org/). It is designed to assess cognitive control in **bilingual participants**, by comparing reaction times and accuracy across two language blocks: native and second language.
 
 ## 🧠 Description
 
-Participants see color words displayed in different colors. Their task is to press:
+Participants will see **color words** displayed in various colors. Their task is to respond:
 
-- → if the **word meaning** matches the **text color** (congruent)
-- ← if it **does not match** (incongruent)
+- **Press → (Right Arrow)** if the **word meaning matches** the color of the text (**congruent**).
+- **Press ← (Left Arrow)** if the **word meaning does not match** the color of the text (**incongruent**).
 
-The experiment automatically:
-- Supports multiple languages (English, Russian, Spanish, Turkish)
-- Measures reaction times and accuracy
-- Saves results to a `.csv` file for later analysis
-https://psychopy.org/download.html
+The experiment:
+- Supports bilingual comparison (native vs. second language)
+- Provides **Russian, Spanish, Turkish** as native languages (English is always the second language)
+- Measures **reaction time** and **accuracy**
+- Saves the results in `stroop_results.csv` (UTF-8 encoded)
+
+---
+
+## 🌐 Language Support
+
+User interface is always in **English**. The experiment includes stimuli in:
+- English (as second language)
+- Russian
+- Turkish
+- Spanish
+
 ---
 
 ## ⚙️ Requirements
 
-You must have **Python 3.8+** installed.
+You must have:
 
-Install required libraries with:
+- **Python 3.8+**
+- [PsychoPy](https://psychopy.org/download.html) installed via pip or the standalone app
+
+### 🧪 To install via pip:
 
 ```bash
 pip install psychopy
-Or, if you're using a virtual environment:
+Or using a virtual environment:
 
-bash
 python -m venv venv
-venv\Scripts\activate     # On Windows
+venv\Scripts\activate      # On Windows
 pip install psychopy
-▶️ How to Run
-Download or clone this repository:
 
-bash
+▶️ How to Run
+
+Clone or download the repository:
+
 git clone https://github.com/your-username/stroop-task-bilingual.git
 cd stroop-task-bilingual
+
+
+Run the experiment:
+
 python stroop_experiment.py
-The experiment will launch in fullscreen. Results will be saved in the same folder as stroop_results.csv
+
+
+The task will launch in fullscreen mode. At the end, results will be saved as stroop_results.csv in the same folder.
+
