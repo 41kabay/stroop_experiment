@@ -13,7 +13,7 @@ The experiment automatically:
 - Supports multiple languages (English, Russian, Spanish, Turkish)
 - Measures reaction times and accuracy
 - Saves results to a `.csv` file for later analysis
-
+https://psychopy.org/download.html
 ---
 
 ## ⚙️ Requirements
