@@ -1,0 +1,105 @@
+#--------------------
+# Секция 1: Опции и шрифты
+#--------------------
+options
+  resolution 1024 768
+  background color white
+  cursor off
+
+fonts
+  main_font arial 36
+
+#--------------------
+# Секция 2: Таблица стимулов
+# Колонки: метка, слово, цвет, правильная клавиша, конгруэнтность (1=да, 0=нет)
+#--------------------
+table stroop_english
+  "red_red"          "RED"         red      d   1
+  "red_green"        "RED"         green    a   0
+  "red_blue"         "RED"         blue     a   0
+  "green_green"      "GREEN"       green    d   1
+  "green_red"        "GREEN"       red      a   0
+  "green_blue"       "GREEN"       blue     a   0
+  "blue_blue"        "BLUE"        blue     d   1
+  "blue_red"         "BLUE"        red      a   0
+  "blue_yellow"      "BLUE"        yellow   a   0
+  "yellow_yellow"    "YELLOW"      yellow   d   1
+  "yellow_red"       "YELLOW"      red      a   0
+  "yellow_black"     "YELLOW"      black    a   0
+  "black_black"      "BLACK"       black    d   1
+  "black_blue"       "BLACK"       blue     a   0
+  "black_green"      "BLACK"       green    a   0
+
+#--------------------
+# Секция 3: Задача (одна проба)
+#--------------------
+task stroop_trial
+  keys a d
+  
+  show text "+" 0 0
+  delay 500
+  clear
+  delay 500
+
+  show text @2 0 0 @3
+  readkey @4 2500
+  clear
+
+  # Сохраняем данные: Имя блока, метка, конгруэнтность (1/0), статус, время реакции
+  save BLOCKNAME @1 @5 STATUS RT
+
+#--------------------
+# Секция 4: Сообщения и блоки
+#--------------------
+message instructions
+  font main_font
+  text "Does the word meaning match the ink color?"
+  line_space 2
+  text "Press 'd' for YES (match)"
+  text "Press 'a' for NO (no match)"
+  line_space 2
+  text "Press SPACE to start"
+  key_press SPACE
+
+block main_experiment
+  tasklist
+    table stroop_english
+    task stroop_trial 15 random
+  end
+
+block feedback_screen
+  font main_font
+  text "RESULTS" -200
+  
+  # Расчет среднего времени для правильных ответов
+  set &CongruentRT   mean RT ; select C_Congruency == 1 && STATUS == CORRECT
+  set &IncongruentRT mean RT ; select C_Congruency == 0 && STATUS == CORRECT
+  set &StroopEffect  expression &IncongruentRT - &CongruentRT
+  
+  # Отображение результатов
+  text "Match:" 0
+  text &CongruentRT 50 ; postfix " ms"
+  
+  text "No Match:" 100
+  text &IncongruentRT 150 ; postfix " ms"
+
+  text "Stroop Effect:" 200
+  text &StroopEffect 250 ; postfix " ms"
+  
+  text "Press SPACE to finish" 350
+  key_press SPACE
+  end
+
+message goodbye
+  font main_font
+  text "Experiment is finished. Thank you."
+  duration 3000
+
+#--------------------
+# Секция 5: Последовательность
+#--------------------
+sequence
+  message instructions
+  block main_experiment
+  block feedback_screen
+  message goodbye

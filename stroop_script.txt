@@ -1,0 +1,162 @@
+# -*- coding: utf-8 -*-
+from psychopy import gui, visual, core, data, event, logging
+import os
+import pandas as pd # Добавляем pandas для анализа в конце
+
+# --- Начальная настройка ---
+
+# Диалоговое окно для сбора информации об участнике
+exp_info = {'participant': '', 'session': '001', 'block_order': ['NL_first', 'SL_first']}
+dlg = gui.DlgFromDict(dictionary=exp_info, title='Stroop Experiment')
+if not dlg.OK:
+    core.quit()
+
+# Имя файла для сохранения данных
+file_name = f"{exp_info['participant']}_{exp_info['session']}"
+_thisDir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(_thisDir)
+
+# Создание объекта ExperimentHandler для управления сохранением данных
+thisExp = data.ExperimentHandler(name='Stroop', version='',
+    extraInfo=exp_info, runtimeInfo=None,
+    originPath='stroop_experiment.py',
+    savePickle=True, saveWideText=True,
+    dataFileName=file_name)
+
+# --- Настройка окна и стимулов ---
+
+win = visual.Window(
+    size=[1024, 768], fullscr=True, screen=0, 
+    winType='pyglet', allowGUI=False, allowStencil=False,
+    monitor='testMonitor', color=[1,1,1], colorSpace='rgb',
+    blendMode='avg', useFBO=True, 
+    units='height')
+
+fixation = visual.TextStim(win=win, text='+', color='black', height=0.1)
+stroop_word = visual.TextStim(win=win, text='', color='black', height=0.1)
+instructions_text = visual.TextStim(win=win, text='', color='black', height=0.05, wrapWidth=1.5)
+welcome_text = "Добро пожаловать в эксперимент!\n\nНажмите ПРОБЕЛ для продолжения."
+break_text = "Первый блок завершен.\n\nНажмите ПРОБЕЛ, чтобы начать второй блок."
+goodbye_text = "Эксперимент завершен.\n\nСохраняем ваши результаты..."
+key_resp = event.BuilderKeyResponse()
+
+# --- Функция для проведения одного блока проб ---
+def run_block(conditions_file, block_name):
+    trials = data.TrialHandler(nReps=1, method='random', 
+        extraInfo=exp_info, originPath=-1,
+        trialList=data.importConditions(conditions_file),
+        seed=None, name=block_name)
+    
+    thisExp.addLoop(trials)
+    
+    for this_trial in trials:
+        stroop_word.setText(this_trial['word_text'])
+        stroop_word.setColor(this_trial['word_color'])
+        
+        fixation.draw()
+        win.flip()
+        core.wait(0.5)
+        
+        win.flip()
+        core.wait(0.5)
+        
+        key_resp.keys = []
+        key_resp.rt = []
+        event.clearEvents(eventType='keyboard')
+        
+        win.callOnFlip(key_resp.clock.reset)
+        
+        trial_clock = core.Clock()
+        
+        while trial_clock.getTime() < 2.5:
+            stroop_word.draw()
+            win.flip()
+            
+            keys = event.getKeys(keyList=['left', 'right'], timeStamped=key_resp.clock)
+            if len(keys) > 0:
+                key_resp.keys = keys[0][0]
+                key_resp.rt = keys[0][1]
+                break
+        
+        if key_resp.keys:
+            if key_resp.keys == this_trial['correct_key']:
+                key_resp.corr = 1
+            else:
+                key_resp.corr = 0
+        else:
+            key_resp.keys = None
+            key_resp.corr = 0
+
+        trials.addData('key_resp.keys', key_resp.keys)
+        trials.addData('key_resp.corr', key_resp.corr)
+        if key_resp.keys:
+            trials.addData('key_resp.rt', key_resp.rt)
+        
+        win.flip()
+        core.wait(0.5)
+        
+        thisExp.nextEntry()
+
+# --- Основная часть эксперимента ---
+
+instructions_text.setText(welcome_text)
+instructions_text.draw()
+win.flip()
+event.waitKeys(keyList=['space'])
+
+if exp_info['block_order'] == 'NL_first':
+    run_block('conditions_nl.xlsx', 'native_language_block')
+    instructions_text.setText(break_text)
+    instructions_text.draw()
+    win.flip()
+    event.waitKeys(keyList=['space'])
+    run_block('conditions_sl.xlsx', 'second_language_block')
+else: # SL_first
+    run_block('conditions_sl.xlsx', 'second_language_block')
+    instructions_text.setText(break_text)
+    instructions_text.draw()
+    win.flip()
+    event.waitKeys(keyList=['space'])
+    run_block('conditions_nl.xlsx', 'native_language_block')
+
+instructions_text.setText(goodbye_text)
+instructions_text.draw()
+win.flip()
+core.wait(2.0)
+
+# ------------------------------------------------------------------
+# !!! НОВЫЙ БЛОК: Расчет и сохранение итоговой статистики !!!
+# ------------------------------------------------------------------
+try:
+    # Получаем полный путь к файлу с сырыми данными, который только что был сохранен
+    raw_data_filename = thisExp.dataFileName + '.csv'
+    
+    # Загружаем сырые данные с помощью pandas
+    df = pd.read_csv(raw_data_filename)
+    
+    # Отфильтровываем только правильные ответы
+    correct_trials = df[df['key_resp.corr'] == 1].copy()
+    
+    
+    # Группируем данные по имени блока (языку) и по конгруэнтности,
+    # затем считаем среднее (mean) и стандартное отклонение (std) времени реакции
+    summary_stats = correct_trials.groupby(['trials.name', 'congruency'])['key_resp.rt'].agg(['mean', 'std'])
+    
+    # Переводим секунды в миллисекунды для удобства
+    summary_stats = summary_stats * 1000
+    
+    # Создаем имя файла для итоговой таблицы
+    summary_filename = f"summary_{exp_info['participant']}_{exp_info['session']}.xlsx"
+    
+    # Сохраняем итоговую статистику в красивый Excel-файл
+    summary_stats.to_excel(summary_filename)
+
+    print(f"Итоговая статистика успешно сохранена в файл: {summary_filename}")
+
+except Exception as e:
+    print(f"Не удалось рассчитать и сохранить статистику. Ошибка: {e}")
+
+
+# --- Завершение ---
+win.close()
+core.quit()
